@@ -1,4 +1,5 @@
-import { Inject, Injectable, Optional } from '@angular/core';
+import { Inject, Injectable, Optional, PLATFORM_ID } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
 import { GoogleTagManagerConfig } from './google-tag-manager-config';
 
 @Injectable({
@@ -6,28 +7,31 @@ import { GoogleTagManagerConfig } from './google-tag-manager-config';
 })
 export class GoogleTagManagerService {
   private isLoaded = false;
-
-  private browserGlobals = {
-    windowRef(): any {
-      return window;
-    },
-    documentRef(): any {
-      return document;
-    },
-  };
-
+  private window:any = {};
+  private document:any = {};
   constructor(
+    @Inject(PLATFORM_ID)
+    private platformId,
+
     @Optional()
     @Inject('googleTagManagerConfig')
     public config: GoogleTagManagerConfig = { id: null },
-    @Optional() @Inject('googleTagManagerId') public googleTagManagerId: string,
+
+    @Optional()
+    @Inject('googleTagManagerId')
+    public googleTagManagerId: string,
+
     @Optional()
     @Inject('googleTagManagerAuth')
     public googleTagManagerAuth: string,
+
     @Optional()
     @Inject('googleTagManagerPreview')
     public googleTagManagerPreview: string
   ) {
+    if (!isPlatformServer(this.platformId)) this.window = window;
+    if (!isPlatformServer(this.platformId)) this.document = document;
+
     if (this.config == null) {
       this.config = { id: null };
     }
@@ -44,9 +48,8 @@ export class GoogleTagManagerService {
   }
 
   public getDataLayer() {
-    const window = this.browserGlobals.windowRef();
-    window['dataLayer'] = window['dataLayer'] || [];
-    return window['dataLayer'];
+    this.window['dataLayer'] = this.window['dataLayer'] || [];
+    return this.window['dataLayer'];
   }
 
   private pushOnDataLayer(obj: object) {
@@ -55,23 +58,20 @@ export class GoogleTagManagerService {
   }
 
   public addGtmToDom() {
-    if (this.isLoaded) {
-      return;
-    }
-    const doc = this.browserGlobals.documentRef();
+    if (this.isLoaded) return;
     this.pushOnDataLayer({
       'gtm.start': new Date().getTime(),
       event: 'gtm.js',
     });
-
-    const gtmScript = doc.createElement('script');
-    gtmScript.id = 'GTMscript';
-    gtmScript.async = true;
-    gtmScript.src = this.applyGtmQueryParams(
-      'https://www.googletagmanager.com/gtm.js'
-    );
-    doc.head.insertBefore(gtmScript, doc.head.firstChild);
-
+    if(this.document.createElement){
+      const gtmScript = this.document.createElement('script');
+      gtmScript.id = 'GTMscript';
+      gtmScript.async = true;
+      gtmScript.src = this.applyGtmQueryParams(
+        'https://www.googletagmanager.com/gtm.js'
+      );
+      this.document.head.insertBefore(gtmScript, this.document.head.firstChild);
+    }
     this.isLoaded = true;
   }
 

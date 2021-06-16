@@ -1,6 +1,6 @@
 {
-  "name": "angular-google-tag-manager",
-  "version": "1.2.4",
+  "name": "ngx-google-tag-manager",
+  "version": "1.2.7",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -13,7 +13,8 @@
     "Nils Thomann <nils.thomann@quickline.ch>",
     "Alvaro Junqueira <alvarocjunq@gmail.com>",
     "Jason Gravell <https://github.com/GravlLift>",
-    "Mathieu Maes <mathieu@webberig.be>"
+    "Mathieu Maes <mathieu@webberig.be>",
+    "Honchar Denys <crackeraki@gmail.com>"
   ],
   "peerDependencies": {
     "@angular/common": "^10.1.2",
